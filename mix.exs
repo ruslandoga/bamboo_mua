@@ -24,7 +24,7 @@ defmodule Bamboo.Mua.MixProject do
       {:bamboo, "~> 2.3"},
       {:mail, "~> 0.2.3"},
       {:castore, "~> 0.1.0 or ~> 1.0"},
-      {:mua, path: "../mua"}
+      {:mua, github: "ruslandoga/mua"}
     ]
   end
 end
