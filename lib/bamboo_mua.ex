@@ -40,39 +40,45 @@ defmodule Bamboo.Mua do
   end
 
   defp recipients(%Bamboo.Email{to: to, cc: cc, bcc: bcc}) do
-    Enum.map(List.wrap(to) ++ List.wrap(cc) ++ List.wrap(bcc), &__MODULE__.address/1)
+    (List.wrap(to) ++ List.wrap(cc) ++ List.wrap(bcc))
+    |> Enum.map(&__MODULE__.address/1)
+    |> Enum.uniq()
   end
 
   defp render(email) do
     Mail.build_multipart()
-    |> Mail.put_to(email.to)
-    |> Mail.put_cc(email.cc)
-    |> Mail.put_bcc(email.bcc)
-    |> Mail.put_from(email.from)
-    |> Mail.put_subject(email.subject)
-    |> maybe_put_text(email.text_body)
-    |> maybe_put_html(email.html_body)
-    |> put_attachments(email.attachments)
+    |> maybe(&Mail.put_from/2, email.from)
+    |> maybe(&Mail.put_to/2, email.to)
+    |> maybe(&Mail.put_cc/2, email.cc)
+    |> maybe(&Mail.put_bcc/2, email.bcc)
+    |> maybe(&Mail.put_reply_to/2, email.reply_to)
+    |> maybe(&Mail.put_subject/2, email.subject)
+    |> maybe(&Mail.put_text/2, email.text_body)
+    |> maybe(&Mail.put_html/2, email.html_body)
+    |> maybe(&__MODULE__.put_headers/2, email.headers)
+    |> maybe(&__MODULE__.put_attachments/2, email.attachments)
     |> Mail.render()
   end
 
-  defp maybe_put_text(mail, nil), do: mail
-  defp maybe_put_text(mail, text), do: Mail.put_text(mail, text)
+  defp maybe(mail, _fun, empty) when empty in [nil, [], %{}], do: mail
+  defp maybe(mail, fun, value), do: fun.(mail, value)
 
-  defp maybe_put_html(mail, nil), do: mail
-  defp maybe_put_html(mail, html), do: Mail.put_html(mail, html)
+  @doc false
+  def put_attachments(mail, attachments) do
+    Enum.reduce(attachments, mail, fn %Bamboo.Attachment{filename: filename, data: data}, mail ->
+      attachment =
+        Mail.Message.build_attachment({filename, data})
+        |> Mail.Message.put_header(:content_type, "application/octet-stream")
+        |> Mail.Message.put_header(:content_length, byte_size(data))
 
-  defp put_attachments(mail, [%Bamboo.Attachment{filename: filename, data: data} | attachments]) do
-    attachment =
-      Mail.Message.build_attachment({filename, data})
-      |> Mail.Message.put_header(:content_type, "application/octet-stream")
-      |> Mail.Message.put_header(:content_length, byte_size(data))
-
-    mail
-    |> Mail.Message.put_part(attachment)
-    |> put_attachments(attachments)
+      Mail.Message.put_part(mail, attachment)
+    end)
   end
 
-  defp put_attachments(mail, []), do: mail
-  defp put_attachments(mail, nil), do: mail
+  @doc false
+  def put_headers(mail, headers) do
+    Enum.reduce(headers, mail, fn {key, value}, mail ->
+      Mail.Message.put_header(mail, key, value)
+    end)
+  end
 end
