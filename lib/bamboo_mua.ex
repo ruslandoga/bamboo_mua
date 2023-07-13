@@ -45,13 +45,13 @@ defmodule Bamboo.Mua do
     |> Enum.uniq()
   end
 
-  defp render(email) do
+  @doc false
+  def render(email) do
     Mail.build_multipart()
     |> maybe(&Mail.put_from/2, email.from)
-    |> maybe(&Mail.put_to/2, email.to)
-    |> maybe(&Mail.put_cc/2, email.cc)
-    |> maybe(&Mail.put_bcc/2, email.bcc)
-    |> maybe(&Mail.put_reply_to/2, email.reply_to)
+    |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
+    |> maybe(&Mail.put_cc/2, prepare_recipients(email.cc))
+    |> maybe(&Mail.put_bcc/2, prepare_recipients(email.bcc))
     |> maybe(&Mail.put_subject/2, email.subject)
     |> maybe(&Mail.put_text/2, email.text_body)
     |> maybe(&Mail.put_html/2, email.html_body)
@@ -62,6 +62,14 @@ defmodule Bamboo.Mua do
 
   defp maybe(mail, _fun, empty) when empty in [nil, [], %{}], do: mail
   defp maybe(mail, fun, value), do: fun.(mail, value)
+
+  defp prepare_recipients({nil, address}), do: address
+
+  defp prepare_recipients([recipient | recipients]) do
+    [prepare_recipients(recipient) | prepare_recipients(recipients)]
+  end
+
+  defp prepare_recipients(other), do: other
 
   @doc false
   def put_attachments(mail, attachments) do
