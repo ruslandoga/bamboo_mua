@@ -5,21 +5,55 @@ defmodule Bamboo.Mua do
 
   @behaviour Bamboo.Adapter
 
+  defmodule MultihostError do
+    @moduledoc """
+    Raised when no relay is used and recipients contain addresses across multiple hosts.
+
+    For example:
+
+        Bamboo.Email.new_email(
+          to: {"Ruslan", "dogaruslan@gmail.com"},
+          cc: [{"Another Ruslan", "ruslandoga@ya.ru"}]
+        )
+
+    Fields:
+
+      - `:hosts` - the hosts for the recipients, `["gmail.com", "ya.ru"]` in the example above
+
+    """
+
+    defexception [:hosts]
+
+    def message(%__MODULE__{hosts: hosts}) do
+      "expected all recipients to be on the same host, got: " <> Enum.join(hosts, ", ")
+    end
+  end
+
   @impl true
   def deliver(email, config) do
-    sender = address(email.from)
-    message = render(email)
-    opts = Map.to_list(config)
+    recipients = recipients(email)
 
-    recipients(email)
-    |> Enum.group_by(&__MODULE__.recipient_host/1)
-    |> Map.to_list()
-    |> case do
+    recipients_by_host =
+      if relay = config[:relay] do
+        [{relay, recipients}]
+      else
+        recipients
+        |> Enum.group_by(&__MODULE__.recipient_host/1)
+        |> Map.to_list()
+      end
+
+    case recipients_by_host do
       [{host, recipients}] ->
-        Mua.easy_send(host, sender, recipients, message, opts)
+        sender = address(email.from)
+        message = render(email)
+        opts = Map.to_list(config)
+
+        with {:ok, _receipt} <- Mua.easy_send(host, sender, recipients, message, opts) do
+          {:ok, email}
+        end
 
       [_ | _] = multihost ->
-        {:error, "expected all recipients to be on the same host, got: #{inspect(multihost)}"}
+        {:error, MultihostError.exception(hosts: :proplists.get_keys(multihost))}
     end
   end
 
@@ -45,8 +79,7 @@ defmodule Bamboo.Mua do
     |> Enum.uniq()
   end
 
-  @doc false
-  def render(email) do
+  defp render(email) do
     Mail.build_multipart()
     |> maybe(&Mail.put_from/2, email.from)
     |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
@@ -73,13 +106,10 @@ defmodule Bamboo.Mua do
 
   @doc false
   def put_attachments(mail, attachments) do
-    Enum.reduce(attachments, mail, fn %Bamboo.Attachment{filename: filename, data: data}, mail ->
-      attachment =
-        Mail.Message.build_attachment({filename, data})
-        |> Mail.Message.put_header(:content_type, "application/octet-stream")
-        |> Mail.Message.put_header(:content_length, byte_size(data))
-
-      Mail.Message.put_part(mail, attachment)
+    Enum.reduce(attachments, mail, fn attachment, mail ->
+      %Bamboo.Attachment{filename: filename, content_type: content_type, data: data} = attachment
+      headers = [content_type: content_type, content_length: Integer.to_string(byte_size(data))]
+      Mail.put_attachment(mail, {filename, data}, headers: headers)
     end)
   end
 
