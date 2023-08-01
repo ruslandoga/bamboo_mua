@@ -44,7 +44,7 @@ defmodule Bamboo.Mua.MixProject do
   defp deps do
     [
       {:bamboo, "~> 2.3"},
-      {:mail, "~> 0.2.3"},
+      {:mail, "~> 0.3.0"},
       {:mua, "~> 0.1.0"},
       {:castore, "~> 0.1.0 or ~> 1.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.3", only: [:dev, :test], runtime: false},
