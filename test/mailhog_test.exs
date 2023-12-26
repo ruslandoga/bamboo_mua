@@ -1,4 +1,4 @@
-defmodule Bamboo.MailHogTest do
+defmodule Bamboo.Mua.MailHogTest do
   use ExUnit.Case, async: true
 
   @moduletag :mailhog
