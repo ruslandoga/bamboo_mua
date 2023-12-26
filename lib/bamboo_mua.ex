@@ -2,7 +2,7 @@ defmodule Bamboo.Mua do
   @moduledoc """
   Bamboo adapter for [Mua.](https://github.com/ruslandoga/mua)
 
-  For supported cofiguration options, please see [`Mua.option()`](https://hexdocs.pm/mua/Mua.html#t:option/0)
+  For supported configuration options, please see [`Mua.option()`](https://hexdocs.pm/mua/Mua.html#t:option/0)
   """
 
   @behaviour Bamboo.Adapter
