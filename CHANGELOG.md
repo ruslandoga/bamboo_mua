@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.1.2 (2013-07-15)
+## 0.1.3 (2023-12-26)
+
+- update docs
+
+## 0.1.2 (2023-07-15)
 
 - add multihost error and refactor https://github.com/ruslandoga/bamboo_mua/pull/3
 

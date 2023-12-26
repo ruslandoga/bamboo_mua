@@ -18,6 +18,7 @@ end
 ## Usage
 
 ```elixir
+# for supported configuration, please see https://hexdocs.pm/mua/Mua.html#t:option/0
 Application.put_env(:example, Mailer, adapter: Bamboo.Mua)
 
 defmodule Mailer do
