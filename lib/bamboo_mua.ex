@@ -11,14 +11,17 @@ defmodule Bamboo.Mua do
 
     For example:
 
-        Bamboo.Email.new_email(
-          to: {"Ruslan", "dogaruslan@gmail.com"},
-          cc: [{"Another Ruslan", "ruslandoga@ya.ru"}]
-        )
+        email =
+          Bamboo.Email.new_email(
+            to: {"Mua", "mua@github.com"},
+            cc: [{"Bamboo", "mua@bamboo.github.com"}]
+          )
+
+        Bamboo.Mua.deliver(email, _no_relay_config = %{})
 
     Fields:
 
-      - `:hosts` - the hosts for the recipients, `["gmail.com", "ya.ru"]` in the example above
+      - `:hosts` - the hosts for the recipients, `["github.com", "bamboo.github.com"]` in the example above
 
     """
 
@@ -34,11 +37,11 @@ defmodule Bamboo.Mua do
     recipients = recipients(email)
 
     recipients_by_host =
-      if relay = config[:relay] do
+      if relay = Map.get(config, :relay) do
         [{relay, recipients}]
       else
         recipients
-        |> Enum.group_by(&__MODULE__.recipient_host/1)
+        |> Enum.group_by(&recipient_host/1)
         |> Map.to_list()
       end
 
@@ -58,24 +61,22 @@ defmodule Bamboo.Mua do
   end
 
   @impl true
-  def handle_config(config), do: config
+  def handle_config(config) when is_map(config), do: config
 
   @impl true
   def supports_attachments?, do: true
 
-  @doc false
-  def address({_, address}) when is_binary(address), do: address
-  def address(address) when is_binary(address), do: address
+  defp address({_, address}) when is_binary(address), do: address
+  defp address(address) when is_binary(address), do: address
 
-  @doc false
-  def recipient_host(address) do
+  defp recipient_host(address) do
     [_username, host] = String.split(address, "@")
     host
   end
 
   defp recipients(%Bamboo.Email{to: to, cc: cc, bcc: bcc}) do
     (List.wrap(to) ++ List.wrap(cc) ++ List.wrap(bcc))
-    |> Enum.map(&__MODULE__.address/1)
+    |> Enum.map(&address/1)
     |> Enum.uniq()
   end
 
@@ -88,8 +89,8 @@ defmodule Bamboo.Mua do
     |> maybe(&Mail.put_subject/2, email.subject)
     |> maybe(&Mail.put_text/2, email.text_body)
     |> maybe(&Mail.put_html/2, email.html_body)
-    |> maybe(&__MODULE__.put_headers/2, email.headers)
-    |> maybe(&__MODULE__.put_attachments/2, email.attachments)
+    |> maybe(&put_headers/2, email.headers)
+    |> maybe(&put_attachments/2, email.attachments)
     |> Mail.render()
   end
 
@@ -104,8 +105,7 @@ defmodule Bamboo.Mua do
 
   defp prepare_recipients(other), do: other
 
-  @doc false
-  def put_attachments(mail, attachments) do
+  defp put_attachments(mail, attachments) do
     Enum.reduce(attachments, mail, fn attachment, mail ->
       %Bamboo.Attachment{filename: filename, content_type: content_type, data: data} = attachment
       headers = [content_type: content_type, content_length: Integer.to_string(byte_size(data))]
@@ -113,8 +113,7 @@ defmodule Bamboo.Mua do
     end)
   end
 
-  @doc false
-  def put_headers(mail, headers) do
+  defp put_headers(mail, headers) do
     Enum.reduce(headers, mail, fn {key, value}, mail ->
       Mail.Message.put_header(mail, key, value)
     end)

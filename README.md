@@ -26,8 +26,8 @@ end
 
 email =
   Bamboo.Email.new_email(
-    from: {"Ruslan", "hey@copycat.fun"},
-    to: {"Ruslan", "dogaruslan@gmail.com"},
+    from: {"Mua", "mua@github.com"},
+    to: {"Receiver", "receiver@mailhog.example"},
     subject: "how are you?",
     text_body: "I'm fine",
     html_body: "I'm <i>fine</i>"

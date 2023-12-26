@@ -4,6 +4,4 @@ defmodule TestMailer do
   use Bamboo.Mailer, otp_app: :bamboo_mua_test
 end
 
-Logger.configure(level: :warning)
-
 ExUnit.start()
