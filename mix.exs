@@ -1,7 +1,7 @@
 defmodule Bamboo.Mua.MixProject do
   use Mix.Project
 
-  @version "0.1.3"
+  @version "0.1.4"
   @repo_url "https://github.com/ruslandoga/bamboo_mua"
 
   def project do
@@ -43,7 +43,7 @@ defmodule Bamboo.Mua.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:bamboo, "~> 2.3"},
+      {:bamboo, "~> 2.0"},
       {:mail, "~> 0.3.0"},
       {:mua, "~> 0.1.5"},
       {:castore, "~> 0.1.0 or ~> 1.0", only: [:dev, :test]},

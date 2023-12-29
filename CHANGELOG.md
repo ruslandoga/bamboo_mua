@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 (2023-12-30)
+
+- relax Bamboo version requirement
+
 ## 0.1.3 (2023-12-26)
 
 - update docs
