@@ -2,7 +2,7 @@ defmodule Bamboo.Mua do
   @moduledoc """
   Bamboo adapter for [Mua.](https://github.com/ruslandoga/mua)
 
-  For supported configuration options, please see [`Mua.option()`](https://hexdocs.pm/mua/Mua.html#t:option/0)
+  For supported configuration options, please see [`option()`](#t:option/0)
   """
 
   @behaviour Bamboo.Adapter
@@ -27,12 +27,15 @@ defmodule Bamboo.Mua do
 
     """
 
+    @type t :: %__MODULE__{hosts: [Mua.host()]}
     defexception [:hosts]
 
     def message(%__MODULE__{hosts: hosts}) do
       "expected all recipients to be on the same host, got: " <> Enum.join(hosts, ", ")
     end
   end
+
+  @type option :: Mua.option() | {:relay, Mua.host()}
 
   @impl true
   def deliver(email, config) do
@@ -110,8 +113,7 @@ defmodule Bamboo.Mua do
   defp put_attachments(mail, attachments) do
     Enum.reduce(attachments, mail, fn attachment, mail ->
       %Bamboo.Attachment{filename: filename, content_type: content_type, data: data} = attachment
-      headers = [content_type: content_type, content_length: Integer.to_string(byte_size(data))]
-      Mail.put_attachment(mail, {filename, data}, headers: headers)
+      Mail.put_attachment(mail, {filename, data}, headers: [content_type: content_type])
     end)
   end
 
