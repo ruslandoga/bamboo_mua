@@ -227,7 +227,6 @@ defmodule Bamboo.Mua.MailHogTest do
                                "Body" => body,
                                "Headers" => %{
                                  "Content-Disposition" => ["attachment; filename=attachment.txt"],
-                                 "Content-Length" => ["9"],
                                  "Content-Transfer-Encoding" => ["base64"],
                                  "Content-Type" => ["text/plain"]
                                }

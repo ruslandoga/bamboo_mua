@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- improve documentation and don't include content-length header for attachments https://github.com/ruslandoga/bamboo_mua/pull/26
+
 ## 0.1.4 (2023-12-30)
 
 - relax Bamboo version requirement

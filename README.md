@@ -10,7 +10,8 @@
 ```elixir
 defp deps do
   [
-    {:bamboo_mua, "~> 0.1.0"}
+    {:bamboo_mua, "~> 0.1.0"},
+    {:castore, "~> 1.0"}
   ]
 end
 ```
@@ -18,7 +19,7 @@ end
 ## Usage
 
 ```elixir
-# for supported configuration, please see https://hexdocs.pm/mua/Mua.html#t:option/0
+# for supported configuration, please see https://hexdocs.pm/bamboo_mua/Bamboo.Mua.html#t:option/0
 Application.put_env(:example, Mailer, adapter: Bamboo.Mua)
 
 defmodule Mailer do
