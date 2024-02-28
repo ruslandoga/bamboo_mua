@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.5 (2024-02-28)
 
 - improve documentation and don't include content-length header for attachments https://github.com/ruslandoga/bamboo_mua/pull/26
 
