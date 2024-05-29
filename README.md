@@ -10,7 +10,7 @@
 ```elixir
 defp deps do
   [
-    {:bamboo_mua, "~> 0.1.0"},
+    {:bamboo_mua, "~> 0.2.0"},
     {:castore, "~> 1.0"}
   ]
 end
