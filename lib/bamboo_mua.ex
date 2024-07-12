@@ -40,9 +40,10 @@ defmodule Bamboo.Mua do
   @impl true
   def deliver(email, config) do
     recipients = recipients(email)
+    relay = Map.get(config, :relay)
 
     recipients_by_host =
-      if relay = Map.get(config, :relay) do
+      if relay do
         [{relay, recipients}]
       else
         recipients
@@ -55,6 +56,15 @@ defmodule Bamboo.Mua do
         sender = address(email.from)
         message = render(email)
         opts = Map.to_list(config)
+
+        # we don't perform MX lookup when relay is used
+        # https://github.com/ruslandoga/bamboo_mua/issues/47
+        opts =
+          if relay do
+            Keyword.put_new(opts, :mx, false)
+          else
+            opts
+          end
 
         with {:ok, _receipt} <- Mua.easy_send(host, sender, recipients, message, opts) do
           {:ok, email}
