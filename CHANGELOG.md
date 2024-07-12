@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- skip MX lookups when using relay
+
 ## 0.2.0 (2024-05-29)
 
 - update Mua to v0.2.0, which splits `:transport_opts` into `:tcp` and `:ssl` options https://github.com/ruslandoga/mua/pull/44

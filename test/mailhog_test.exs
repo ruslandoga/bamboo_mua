@@ -174,7 +174,7 @@ defmodule Bamboo.Mua.MailHogTest do
     end
 
     test "without relay, all recipients on the same host", %{email: email} do
-      {:ok, local_hostname} = Mua.guess_sender_hostname()
+      {:ok, local_hostname} = guess_sender_hostname()
 
       # turns `mac3` into `mac3.local`
       local_hostname =
@@ -271,5 +271,14 @@ defmodule Bamboo.Mua.MailHogTest do
 
   defp mailhog_search(params) do
     Req.get!("http://localhost:8025/api/v2/search?" <> URI.encode_query(params)).body
+  end
+
+  require Record
+  Record.defrecordp(:hostent, Record.extract(:hostent, from_lib: "kernel/include/inet.hrl"))
+
+  defp guess_sender_hostname do
+    with {:ok, hostname} <- :inet.gethostname(),
+         {:ok, hostent(h_name: hostname)} <- :inet.gethostbyname(hostname),
+         do: {:ok, List.to_string(hostname)}
   end
 end
