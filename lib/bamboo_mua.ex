@@ -96,7 +96,9 @@ defmodule Bamboo.Mua do
   end
 
   defp render(email) do
-    Mail.build_multipart()
+    message = if multipart?(email), do: Mail.build_multipart(), else: Mail.build()
+
+    message
     |> maybe(&Mail.put_from/2, email.from)
     |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
     |> maybe(&Mail.put_cc/2, prepare_recipients(email.cc))
@@ -109,7 +111,14 @@ defmodule Bamboo.Mua do
     |> Mail.render()
   end
 
-  defp maybe(mail, _fun, empty) when empty in [nil, [], %{}], do: mail
+  @empty [nil, [], %{}]
+
+  defp multipart?(email) do
+    parts = Enum.reject([email.text_body, email.html_body, email.attachments], &(&1 in @empty))
+    length(parts) > 1
+  end
+
+  defp maybe(mail, _fun, empty) when empty in @empty, do: mail
   defp maybe(mail, fun, value), do: fun.(mail, value)
 
   defp prepare_recipients({nil, address}), do: address
