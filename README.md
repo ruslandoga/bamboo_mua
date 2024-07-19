@@ -29,7 +29,7 @@ end
 email =
   Bamboo.Email.new_email(
     from: {"Mua", "mua@github.com"},
-    to: {"Receiver", "receiver@mailhog.example"},
+    to: {"Receiver", "receiver@mailpit.example"},
     subject: "how are you?",
     text_body: "I'm fine",
     html_body: "I'm <i>fine</i>"

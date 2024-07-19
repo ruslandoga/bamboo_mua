@@ -13,8 +13,8 @@ jobs:
       MIX_ENV: test
 
     services:
-      mailhog:
-        image: mailhog/mailhog:latest
+      mailpit:
+        image: axllent/mailpit:latest
         ports:
           - 1025:1025
           - 8025:8025
@@ -26,9 +26,20 @@ jobs:
             --health-retries 5
 
     strategy:
+      # https://hexdocs.pm/elixir/compatibility-and-deprecations.html#between-elixir-and-erlang-otp
       matrix:
-        elixir: ["1.14", "1.15", "1.16"]
-        otp: ["25", "26"]
+        elixir: [1.16, 1.15, 1.14, 1.13]
+        otp: [26, 25, 24, 23]
+        include:
+          - elixir: 1.17
+            otp: 27
+        exclude:
+          - elixir: 1.15
+            otp: 23
+          - elixir: 1.16
+            otp: 23
+          - elixir: 1.13
+            otp: 26
 
     steps:
       - uses: actions/checkout@v4
@@ -53,11 +64,11 @@ jobs:
       - run: mix test --cover
 
   format:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
       - uses: erlef/setup-beam@v1
         with:
-          elixir-version: "1.16"
-          otp-version: "26"
+          elixir-version: 1
+          otp-version: 27
       - run: mix format --check-formatted
