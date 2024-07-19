@@ -12,7 +12,10 @@ defmodule Bamboo.Mua.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       # hex
-      package: package(),
+      package: [
+        licenses: ["MIT"],
+        links: %{"GitHub" => @repo_url}
+      ],
       description: "Bamboo adapter for Mua, a minimal SMTP client",
       # docs
       name: "Bamboo.Mua",
@@ -28,17 +31,11 @@ defmodule Bamboo.Mua.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    [
-      extra_applications: [:logger]
-    ]
+    [extra_applications: extra_applications(Mix.env())]
   end
 
-  defp package do
-    [
-      licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
-    ]
-  end
+  defp extra_applications(env) when env in [:dev, :test], do: [:inets]
+  defp extra_applications(_env), do: []
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
@@ -46,10 +43,9 @@ defmodule Bamboo.Mua.MixProject do
       {:bamboo, "~> 2.0"},
       {:mail, "~> 0.3.0"},
       {:mua, "~> 0.2.3"},
-      {:castore, "~> 0.1.0 or ~> 1.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.3", only: [:dev, :test], runtime: false},
-      {:req, "~> 0.5.1", only: :test},
-      {:ex_doc, "~> 0.29", only: :dev}
+      {:ex_doc, "~> 0.29", only: :dev},
+      {:jason, "~> 1.4", only: :test}
     ]
   end
 end
