@@ -128,19 +128,21 @@ defmodule Bamboo.Mua do
   end
 
   defp put_headers(mail, headers) do
+    keys = headers |> Map.keys() |> Enum.map(&String.downcase/1)
+
+    has_date? = "date" in keys
+    has_message_id? = "message-id" in keys
+
     # https://github.com/ruslandoga/bamboo_mua/issues/53
-    headers =
-      headers
-      |> Map.put_new_lazy("Message-ID", &__MODULE__.message_id/0)
-      |> Map.put_new_lazy("Date", &DateTime.utc_now/0)
+    headers = if has_date?, do: headers, else: Map.put(headers, "Date", DateTime.utc_now())
+    headers = if has_message_id?, do: headers, else: Map.put(headers, "Message-ID", message_id())
 
     Enum.reduce(headers, mail, fn {key, value}, mail ->
       Mail.Message.put_header(mail, key, value)
     end)
   end
 
-  @doc false
-  def message_id do
+  defp message_id do
     Base.hex_encode32(
       <<
         System.system_time(:nanosecond)::64,
