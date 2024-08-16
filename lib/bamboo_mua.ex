@@ -97,6 +97,7 @@ defmodule Bamboo.Mua do
 
   defp render(email) do
     Mail.build_multipart()
+    |> put_headers(email.headers)
     |> maybe(&Mail.put_from/2, email.from)
     |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
     |> maybe(&Mail.put_cc/2, prepare_recipients(email.cc))
@@ -104,7 +105,6 @@ defmodule Bamboo.Mua do
     |> maybe(&Mail.put_subject/2, email.subject)
     |> maybe(&Mail.put_text/2, email.text_body)
     |> maybe(&Mail.put_html/2, email.html_body)
-    |> maybe(&put_headers/2, email.headers)
     |> maybe(&put_attachments/2, email.attachments)
     |> Mail.render()
   end
