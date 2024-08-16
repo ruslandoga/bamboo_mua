@@ -6,40 +6,32 @@ defmodule Bamboo.Mua.MailpitTest do
 
   describe "deliver_now/2" do
     setup do
-      message_id = "#{System.system_time()}.#{System.unique_integer([:positive])}.mua@localhost"
-
       base_email =
         Bamboo.Email.new_email(
           from: {"Mua", "mua@github.com"},
           to: {"Recipient", "recipient@mailpit.example"},
           subject: "how are you? 😋",
           text_body: "I'm fine 😌",
-          html_body: "I'm <i>fine</i> 😌",
-          headers: %{"Message-ID" => message_id}
+          html_body: "I'm <i>fine</i> 😌"
         )
 
       {:ok, email: base_email}
     end
 
     test "base mail", %{email: email} do
-      assert {:ok, email} = mailpit_deliver(email)
+      assert {:ok, _email} = mailpit_deliver(email)
 
       assert %{
-               "messages" => [
-                 %{
-                   "Bcc" => [],
-                   "Cc" => [],
-                   "From" => %{"Address" => "mua@github.com", "Name" => "Mua"},
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => [%{"Address" => "recipient@mailpit.example", "Name" => "Recipient"}]
-                 }
-               ]
-             } = mailpit_search(email)
+               "From" => %{"Address" => "mua@github.com", "Name" => "Mua"},
+               "To" => [%{"Address" => "recipient@mailpit.example", "Name" => "Recipient"}],
+               "Subject" => "how are you? 😋",
+               "HTML" => "I'm <i>fine</i> 😌",
+               "Text" => "I'm fine 😌\r\n"
+             } = mailpit_summary("latest")
     end
 
     test "with address sender/recipient", %{email: email} do
-      assert {:ok, email} =
+      assert {:ok, _email} =
                email
                |> Bamboo.Email.from("mua@github.com")
                |> Bamboo.Email.to("to@mailpit.example")
@@ -48,27 +40,21 @@ defmodule Bamboo.Mua.MailpitTest do
                |> mailpit_deliver()
 
       assert %{
-               "messages" => [
-                 %{
-                   "Bcc" => [
-                     %{"Address" => "bcc1@mailpit.examile", "Name" => ""},
-                     %{"Address" => "bcc2@mailpit.example", "Name" => ""}
-                   ],
-                   "Cc" => [
-                     %{"Address" => "cc1@mailpit.examile", "Name" => ""},
-                     %{"Address" => "cc2@mailpit.example", "Name" => ""}
-                   ],
-                   "From" => %{"Address" => "mua@github.com", "Name" => ""},
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => [%{"Address" => "to@mailpit.example", "Name" => ""}]
-                 }
+               "From" => %{"Address" => "mua@github.com", "Name" => ""},
+               "To" => [%{"Address" => "to@mailpit.example", "Name" => ""}],
+               "Bcc" => [
+                 %{"Address" => "bcc1@mailpit.examile", "Name" => ""},
+                 %{"Address" => "bcc2@mailpit.example", "Name" => ""}
+               ],
+               "Cc" => [
+                 %{"Address" => "cc1@mailpit.examile", "Name" => ""},
+                 %{"Address" => "cc2@mailpit.example", "Name" => ""}
                ]
-             } = mailpit_search(email)
+             } = mailpit_summary("latest")
     end
 
     test "with tuple recipient (empty name)", %{email: email} do
-      assert {:ok, email} =
+      assert {:ok, _email} =
                email
                |> Bamboo.Email.from({nil, "mua@github.com"})
                |> Bamboo.Email.to({nil, "to@mailpit.example"})
@@ -77,28 +63,26 @@ defmodule Bamboo.Mua.MailpitTest do
                |> mailpit_deliver()
 
       assert %{
-               "messages" => [
-                 %{
-                   "Bcc" => [
-                     %{"Address" => "bcc1@mailpit.examile", "Name" => ""},
-                     %{"Address" => "bcc2@mailpit.example", "Name" => ""}
-                   ],
-                   "Cc" => [
-                     %{"Address" => "cc1@mailpit.examile", "Name" => ""},
-                     %{"Address" => "cc2@mailpit.example", "Name" => ""}
-                   ],
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => [%{"Address" => "to@mailpit.example", "Name" => ""}]
-                 }
+               "From" => %{"Address" => "mua@github.com", "Name" => ""},
+               "To" => [%{"Address" => "to@mailpit.example", "Name" => ""}],
+               "Bcc" => [
+                 %{"Address" => "bcc1@mailpit.examile", "Name" => ""},
+                 %{"Address" => "bcc2@mailpit.example", "Name" => ""}
+               ],
+               "Cc" => [
+                 %{"Address" => "cc1@mailpit.examile", "Name" => ""},
+                 %{"Address" => "cc2@mailpit.example", "Name" => ""}
                ]
-             } = mailpit_search(email)
+             } = mailpit_summary("latest")
     end
 
     test "with cc and bcc", %{email: email} do
-      assert {:ok, email} =
+      assert {:ok, _email} =
                email
-               |> Bamboo.Email.cc([{"CC1", "cc1@mailpit.example"}, {"CC2", "cc2@mailpit.example"}])
+               |> Bamboo.Email.cc([
+                 {"CC1", "cc1@mailpit.example"},
+                 {"CC2", "cc2@mailpit.example"}
+               ])
                |> Bamboo.Email.bcc([
                  {"BCC1", "bcc1@mailpit.example"},
                  {"BCC2", "bcc2@mailpit.example"}
@@ -106,23 +90,15 @@ defmodule Bamboo.Mua.MailpitTest do
                |> mailpit_deliver()
 
       assert %{
-               "messages" => [
-                 %{
-                   "Bcc" => [
-                     %{"Address" => "bcc1@mailpit.example", "Name" => ""},
-                     %{"Address" => "bcc2@mailpit.example", "Name" => ""}
-                   ],
-                   "Cc" => [
-                     %{"Address" => "cc1@mailpit.example", "Name" => "CC1"},
-                     %{"Address" => "cc2@mailpit.example", "Name" => "CC2"}
-                   ],
-                   "From" => %{"Address" => "mua@github.com", "Name" => "Mua"},
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => [%{"Address" => "recipient@mailpit.example", "Name" => "Recipient"}]
-                 }
+               "Cc" => [
+                 %{"Address" => "cc1@mailpit.example", "Name" => "CC1"},
+                 %{"Address" => "cc2@mailpit.example", "Name" => "CC2"}
+               ],
+               "Bcc" => [
+                 %{"Address" => "bcc1@mailpit.example", "Name" => ""},
+                 %{"Address" => "bcc2@mailpit.example", "Name" => ""}
                ]
-             } = mailpit_search(email)
+             } = mailpit_summary("latest")
     end
 
     test "without relay, all recipients on the same host", %{email: email} do
@@ -135,7 +111,7 @@ defmodule Bamboo.Mua.MailpitTest do
           _ -> local_hostname
         end
 
-      assert {:ok, email} =
+      assert {:ok, _email} =
                email
                |> Bamboo.Email.to({"Recipient", "recipient@#{local_hostname}"})
                |> Bamboo.Email.cc([
@@ -144,20 +120,7 @@ defmodule Bamboo.Mua.MailpitTest do
                ])
                |> TestMailer.deliver_now(config: %{port: 1025, timeout: :timer.seconds(3)})
 
-      assert %{
-               "messages" => [
-                 %{
-                   "Attachments" => 0,
-                   "Bcc" => [],
-                   "Cc" => cc,
-                   "From" => %{"Address" => "mua@github.com", "Name" => "Mua"},
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => to
-                 }
-               ]
-             } = mailpit_search(email)
-
+      assert %{"To" => to, "Cc" => cc} = mailpit_summary("latest")
       rcpts = to ++ cc
 
       assert Enum.all?(rcpts, fn %{"Address" => address} ->
@@ -168,27 +131,24 @@ defmodule Bamboo.Mua.MailpitTest do
     test "with attachments", %{email: email} do
       attachment = Bamboo.Attachment.new("test/priv/attachment.txt")
 
-      assert {:ok, email} =
+      assert {:ok, _email} =
                email
                |> Bamboo.Email.put_attachment(attachment)
                |> mailpit_deliver()
 
       assert %{
-               "messages" => [
+               "ID" => message_id,
+               "Attachments" => [
                  %{
-                   "Attachments" => 1,
-                   "Bcc" => [],
-                   "Cc" => [],
-                   "From" => %{"Address" => "mua@github.com", "Name" => "Mua"},
-                   "Snippet" => "I'm fine 😌",
-                   "Subject" => "how are you? 😋",
-                   "To" => [%{"Address" => "recipient@mailpit.example", "Name" => "Recipient"}]
+                   "ContentType" => "text/plain",
+                   "FileName" => "attachment.txt",
+                   "PartID" => part_id,
+                   "Size" => 9
                  }
                ]
-             } = mailpit_search(email)
+             } = mailpit_summary("latest")
 
-      # TODO
-      # assert Base.decode64!(body) == "hello :)\n"
+      assert mailpit_attachment(message_id, part_id) == "hello :)\n"
     end
   end
 
@@ -197,12 +157,16 @@ defmodule Bamboo.Mua.MailpitTest do
     TestMailer.deliver_now(email, config: config)
   end
 
-  defp mailpit_search(%Bamboo.Email{headers: %{"Message-ID" => message_id}}) do
-    mailpit_search(%{"query" => "message-id:" <> message_id})
+  defp mailpit_summary(message_id) do
+    mailpit_api_request("http://localhost:8025/api/v1/message/#{message_id}")
   end
 
-  defp mailpit_search(params) do
-    url = String.to_charlist("http://localhost:8025/api/v1/search?" <> URI.encode_query(params))
+  defp mailpit_attachment(message_id, part_id) do
+    mailpit_api_request("http://localhost:8025/api/v1/message/#{message_id}/part/#{part_id}")
+  end
+
+  defp mailpit_api_request(url) do
+    url = String.to_charlist(url)
 
     http_opts = [
       timeout: :timer.seconds(15),
@@ -214,12 +178,15 @@ defmodule Bamboo.Mua.MailpitTest do
     ]
 
     case :httpc.request(:get, {url, _headers = []}, http_opts, opts) do
-      {:ok, {{_, status, _}, _headers, body} = response} ->
+      {:ok, {{_, status, _}, headers, body} = response} ->
         unless status == 200 do
           raise "failed GET #{url} with #{inspect(response)}"
         end
 
-        Jason.decode!(body)
+        case :proplists.get_value(~c"content-type", headers) do
+          ~c"application/json" -> Jason.decode!(body)
+          _ -> body
+        end
 
       {:error, reason} ->
         raise "failed GET #{url} with #{inspect(reason)}"

@@ -128,8 +128,26 @@ defmodule Bamboo.Mua do
   end
 
   defp put_headers(mail, headers) do
+    # https://github.com/ruslandoga/bamboo_mua/issues/53
+    headers =
+      headers
+      |> Map.put_new_lazy("Message-ID", &__MODULE__.message_id/0)
+      |> Map.put_new_lazy("Date", &DateTime.utc_now/0)
+
     Enum.reduce(headers, mail, fn {key, value}, mail ->
       Mail.Message.put_header(mail, key, value)
     end)
+  end
+
+  @doc false
+  def message_id do
+    Base.hex_encode32(
+      <<
+        System.system_time(:nanosecond)::64,
+        :erlang.phash2({node(), self()}, 16_777_216)::24,
+        :erlang.unique_integer()::32
+      >>,
+      case: :lower
+    )
   end
 end

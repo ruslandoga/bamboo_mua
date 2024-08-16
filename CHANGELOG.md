@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- add Date and Message-ID headers if missing
+
 ## 0.2.1 (2024-06-12)
 
 - skip MX lookups when using relay
