@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.2 (2024-08-16)
 
 - add Date and Message-ID headers if missing https://github.com/ruslandoga/bamboo_mua/pull/54
 
