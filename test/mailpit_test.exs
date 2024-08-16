@@ -28,6 +28,12 @@ defmodule Bamboo.Mua.MailpitTest do
                "HTML" => "I'm <i>fine</i> 😌",
                "Text" => "I'm fine 😌\r\n"
              } = mailpit_summary("latest")
+
+      # https://github.com/ruslandoga/bamboo_mua/issues/53
+      assert %{
+               "Date" => [_has_date],
+               "Message-Id" => [_has_message_id]
+             } = mailpit_headers("latest")
     end
 
     test "with address sender/recipient", %{email: email} do
@@ -159,6 +165,10 @@ defmodule Bamboo.Mua.MailpitTest do
 
   defp mailpit_summary(message_id) do
     mailpit_api_request("http://localhost:8025/api/v1/message/#{message_id}")
+  end
+
+  defp mailpit_headers(message_id) do
+    mailpit_api_request("http://localhost:8025/api/v1/message/#{message_id}/headers")
   end
 
   defp mailpit_attachment(message_id, part_id) do
