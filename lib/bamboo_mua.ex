@@ -97,6 +97,7 @@ defmodule Bamboo.Mua do
 
   defp render(email) do
     Mail.build_multipart()
+    |> put_headers(email.headers)
     |> maybe(&Mail.put_from/2, email.from)
     |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
     |> maybe(&Mail.put_cc/2, prepare_recipients(email.cc))
@@ -104,7 +105,6 @@ defmodule Bamboo.Mua do
     |> maybe(&Mail.put_subject/2, email.subject)
     |> maybe(&Mail.put_text/2, email.text_body)
     |> maybe(&Mail.put_html/2, email.html_body)
-    |> maybe(&put_headers/2, email.headers)
     |> maybe(&put_attachments/2, email.attachments)
     |> Mail.render()
   end
@@ -128,8 +128,26 @@ defmodule Bamboo.Mua do
   end
 
   defp put_headers(mail, headers) do
+    # https://github.com/ruslandoga/bamboo_mua/issues/53
+    headers =
+      headers
+      |> Map.put_new_lazy("Message-ID", &__MODULE__.message_id/0)
+      |> Map.put_new_lazy("Date", &DateTime.utc_now/0)
+
     Enum.reduce(headers, mail, fn {key, value}, mail ->
       Mail.Message.put_header(mail, key, value)
     end)
+  end
+
+  @doc false
+  def message_id do
+    Base.hex_encode32(
+      <<
+        System.system_time(:nanosecond)::64,
+        :erlang.phash2({node(), self()}, 16_777_216)::24,
+        :erlang.unique_integer()::32
+      >>,
+      case: :lower
+    )
   end
 end
