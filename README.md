@@ -1,4 +1,5 @@
-Please consider switching to https://github.com/swoosh/swoosh.
+> [!WARNING]
+> Please consider switching to https://github.com/swoosh/swoosh
 
 ---
 
