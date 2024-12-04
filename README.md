@@ -1,3 +1,7 @@
+Please consider switching to https://github.com/swoosh/swoosh.
+
+---
+
 # Bamboo.Mua
 
 [![Hex Package](https://img.shields.io/hexpm/v/bamboo_mua.svg)](https://hex.pm/packages/bamboo_mua)
