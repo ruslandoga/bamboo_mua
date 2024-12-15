@@ -47,7 +47,7 @@ defmodule Bamboo.Mua do
         [{relay, recipients}]
       else
         recipients
-        |> Enum.group_by(&recipient_host/1)
+        |> Enum.group_by(&host/1)
         |> Map.to_list()
       end
 
@@ -84,7 +84,7 @@ defmodule Bamboo.Mua do
   defp address({_, address}) when is_binary(address), do: address
   defp address(address) when is_binary(address), do: address
 
-  defp recipient_host(address) do
+  defp host(address) do
     [_username, host] = String.split(address, "@")
     host
   end
@@ -97,7 +97,7 @@ defmodule Bamboo.Mua do
 
   defp render(email) do
     Mail.build_multipart()
-    |> put_headers(email.headers)
+    |> put_headers(email)
     |> maybe(&Mail.put_from/2, email.from)
     |> maybe(&Mail.put_to/2, prepare_recipients(email.to))
     |> maybe(&Mail.put_cc/2, prepare_recipients(email.cc))
@@ -127,29 +127,48 @@ defmodule Bamboo.Mua do
     end)
   end
 
-  defp put_headers(mail, headers) do
+  defp put_headers(mail, bamboo_email) do
+    %{from: from, headers: headers} = bamboo_email
+
+    utc_now = DateTime.utc_now()
     keys = headers |> Map.keys() |> Enum.map(&String.downcase/1)
 
     has_date? = "date" in keys
     has_message_id? = "message-id" in keys
 
-    # https://github.com/ruslandoga/bamboo_mua/issues/53
-    headers = if has_date?, do: headers, else: Map.put(headers, "Date", DateTime.utc_now())
-    headers = if has_message_id?, do: headers, else: Map.put(headers, "Message-ID", message_id())
+    headers = if has_date?, do: headers, else: Map.put(headers, "Date", utc_now)
+
+    headers =
+      if has_message_id? do
+        headers
+      else
+        address = address(from)
+        host = host(address)
+        Map.put(headers, "Message-ID", message_id(host, utc_now))
+      end
 
     Enum.reduce(headers, mail, fn {key, value}, mail ->
       Mail.Message.put_header(mail, key, value)
     end)
   end
 
-  defp message_id do
-    Base.hex_encode32(
-      <<
-        System.system_time(:nanosecond)::64,
-        :erlang.phash2({node(), self()}, 16_777_216)::24,
-        :erlang.unique_integer()::32
-      >>,
-      case: :lower
-    )
+  defp message_id(host, utc_now) do
+    date = Calendar.strftime(utc_now, "%Y%m%d")
+    time = DateTime.to_time(utc_now)
+    {seconds_after_midnight, _ms} = Time.to_seconds_after_midnight(time)
+
+    disambiguator =
+      Base.hex_encode32(
+        <<
+          seconds_after_midnight::17,
+          :erlang.phash2({node(), self()}, 8_388_608)::23,
+          :erlang.unique_integer()::24
+        >>,
+        case: :lower,
+        padding: false
+      )
+
+    # e.g. <20241211.7aqmq6bb022i8@example.com>
+    "<#{date}.#{disambiguator}@#{host}>"
   end
 end

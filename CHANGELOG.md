@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- make Message-ID confirm to RFC2822 https://github.com/ruslandoga/bamboo_mua/pull/65
+
 ## 0.2.2 (2024-08-16)
 
 - add Date and Message-ID headers if missing https://github.com/ruslandoga/bamboo_mua/pull/54
