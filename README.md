@@ -1,5 +1,5 @@
 > [!WARNING]
-> Please consider switching to https://github.com/swoosh/swoosh
+> Please consider switching to [Swoosh.Adapters.Mua](https://hexdocs.pm/swoosh/Swoosh.Adapters.Mua.html)
 
 ---
 
