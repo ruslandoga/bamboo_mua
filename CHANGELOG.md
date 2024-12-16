@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 (2024-12-16)
+
+- improve documentation
+
 ## 0.2.3 (2024-12-15)
 
 - make Message-ID confirm to RFC2822 https://github.com/ruslandoga/bamboo_mua/pull/65
