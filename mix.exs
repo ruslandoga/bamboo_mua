@@ -22,8 +22,8 @@ defmodule Bamboo.Mua.MixProject do
       docs: [
         source_url: @repo_url,
         source_ref: "v#{@version}",
-        main: "readme",
-        extras: ["README.md", "CHANGELOG.md"],
+        main: "Bamboo.Mua",
+        extras: ["CHANGELOG.md"],
         skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
       ]
     ]

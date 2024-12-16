@@ -18,6 +18,11 @@ defmodule Bamboo.Mua.MailpitTest do
       {:ok, email: base_email}
     end
 
+    defp mailpit_deliver(email) do
+      config = %{relay: "localhost", port: 1025, timeout: :timer.seconds(1)}
+      TestMailer.deliver_now(email, config: config)
+    end
+
     test "base mail", %{email: email} do
       assert {:ok, _email} = mailpit_deliver(email)
 
@@ -156,11 +161,6 @@ defmodule Bamboo.Mua.MailpitTest do
 
       assert mailpit_attachment(message_id, part_id) == "hello :)\n"
     end
-  end
-
-  defp mailpit_deliver(email) do
-    config = %{relay: "localhost", port: 1025, timeout: :timer.seconds(1)}
-    TestMailer.deliver_now(email, config: config)
   end
 
   defp mailpit_summary(message_id) do

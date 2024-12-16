@@ -16,29 +16,12 @@
 defp deps do
   [
     {:bamboo_mua, "~> 0.2.0"},
-    {:castore, "~> 1.0"}
+    # if on OTP version below 25
+    # {:castore, "~> 1.0"}
   ]
 end
 ```
 
 ## Usage
 
-```elixir
-# for supported configuration, please see https://hexdocs.pm/bamboo_mua/Bamboo.Mua.html#t:option/0
-Application.put_env(:example, Mailer, adapter: Bamboo.Mua)
-
-defmodule Mailer do
-  use Bamboo.Mailer, otp_app: :example
-end
-
-email =
-  Bamboo.Email.new_email(
-    from: {"Mua", "mua@github.com"},
-    to: {"Receiver", "receiver@mailpit.example"},
-    subject: "how are you?",
-    text_body: "I'm fine",
-    html_body: "I'm <i>fine</i>"
-  )
-
-Mailer.deliver_now(email)
-```
+Please see [documentation](https://hexdocs.pm/bamboo_mua) and Mailpit [tests](./test/mailpit_test.exs) for examples.

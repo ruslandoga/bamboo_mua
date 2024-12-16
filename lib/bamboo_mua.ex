@@ -1,6 +1,53 @@
 defmodule Bamboo.Mua do
   @moduledoc """
-  Bamboo adapter for [Mua.](https://github.com/ruslandoga/mua)
+  [Bamboo](https://github.com/thoughtbot/bamboo) adapter for [Mua.](https://github.com/ruslandoga/mua)
+
+  > #### Deprecated {: .warning}
+  >
+  > Please consider switching to [Swoosh.Adapters.Mua](https://hexdocs.pm/swoosh/Swoosh.Adapters.Mua.html)
+
+  ## Installation
+
+  ```elixir
+  defp deps do
+    [
+      {:bamboo_mua, "~> 0.2.0"},
+      # if on OTP version below 25
+      # {:castore, "~> 1.0"}
+    ]
+  end
+  ```
+
+  ## Usage
+
+  ```elixir
+  config = [
+    adapter: Bamboo.Mua,
+    relay: "smtp.icloud.com",
+    port: 587,
+    auth: [
+      username: "ruslandoga@icloud.com",
+      password: "some app password"
+    ]
+  ]
+
+  Application.put_env(:example, Mailer, config)
+
+  defmodule Mailer do
+    use Bamboo.Mailer, otp_app: :example
+  end
+
+  email =
+    Bamboo.Email.new_email(
+      from: {"Ruslan", "ruslandoga@icloud.com"},
+      to: {"Receiver", "receiver@example.com"},
+      subject: "how are you?",
+      text_body: "I'm fine",
+      html_body: "I'm <i>fine</i>"
+    )
+
+  Mailer.deliver_now(email)
+  ```
 
   For supported configuration options, please see [`option()`](#t:option/0)
   """
