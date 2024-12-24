@@ -6,7 +6,7 @@
 
 ## 0.2.3 (2024-12-15)
 
-- make Message-ID confirm to RFC2822 https://github.com/ruslandoga/bamboo_mua/pull/65
+- make Message-ID conform to RFC2822 https://github.com/ruslandoga/bamboo_mua/pull/65
 
 ## 0.2.2 (2024-08-16)
 
