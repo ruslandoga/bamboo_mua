@@ -11,6 +11,11 @@ defmodule Bamboo.Mua.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      # dialyzer
+      dialyzer: [
+        plt_local_path: "plts",
+        plt_core_path: "plts"
+      ],
       # hex
       package: [
         licenses: ["MIT"],
